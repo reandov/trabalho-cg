@@ -2,6 +2,7 @@
 #include<fstream>
 #include<sstream>
 #include"Vetor.h"
+#include"Material.h"
 
 struct face {
 	unsigned index;

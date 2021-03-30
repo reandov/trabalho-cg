@@ -1,80 +1,115 @@
-// Importações
-#include <GLFW/glfw3.h> 
-#include <GL/glut.h>
+#include <GLFW/glfw3.h>
+#include <GL/gl.h>
 #include <GL/glu.h>
+#include <vector>
 
-#include "./headers/ObjLoader.h"
+#include "ObjLoader.h"
 
-// Assinaturas
+// Inicializar 
 void init(GLFWwindow* window);
 void teclado_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
 void reSize(int w, int h);
-void draw(float dt);
 
-// Variáveis Globais
-static float angulo = 0; 
-static unsigned blenderModelId; 
+// Funções
 
-int main(int argc, char** argv) {
-  glfwInit();
 
-  GLFWwindow *window = glfwCreateWindow(800, 600, "Trabalho CG", NULL, NULL);
+// Variáveis
+static float angulo = 0;
+static unsigned blenderModelId;
 
-  init(window); 
+void Desenha(float dt) {
 
-  float lastTime = 0.0; 
+	glLoadIdentity();
 
-  bool running = true; 
+	vec3 position(0.f, 0.f, 0.f);
+	vec3 direction(0.f, 0.f, -3.f);
+	vec3 up(0.f, 1.f, 0.f);
+	vec3 look = position + direction;// direction;
 
-  while (running) {
-    float currentTime = (float)glfwGetTime();
-    float dt = currentTime - lastTime;
-    lastTime = currentTime;
+	gluLookAt(
+		position.x, position.y, position.z,
+		look.x, look.y, look.z,
+		up.x, up.y, up.z);
 
-    glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    int width, height; 
-    glfwGetFramebufferSize(window, &width, &height); 
-    reSize(width, height);
+	float veloc_ang = 25.f*dt;
+	angulo += veloc_ang;
 
-    // Desenha Objetos
-    draw(dt);
+	glPushMatrix();
+		glTranslatef(0.f, 0.f, -5.f);
+		glRotatef(angulo, 1.f, 0.f, 0.f);
+		glRotatef(angulo, 0.f, 1.f, 0.f);
+		glRotatef(angulo, 0.f, 0.f, 1.f);
+		glCallList(blenderModelId);
+	glPopMatrix();
 
-    glfwSwapBuffers(window);
-    running = !glfwWindowShouldClose(window);
-  }
-
-  glfwDestroyWindow(window);
-  glfwTerminate();
-  
-  return 0;
+	if (angulo >= 360.0)
+		angulo = 0.0;
 }
 
-void init(GLFWwindow * window) {
-  glfwMakeContextCurrent(window); 
-  glfwSetKeyCallback(window, teclado_callback); 
+int main() {
 
-  glClearColor(0.f, 0.f, 0.f, 1.f);
+	glfwInit();
 
-  glEnable(GL_DEPTH_TEST);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutorial Light - Blender", NULL, NULL);
 
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+	init(window);
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
+	float lastTime = 0.0;
 
-  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	bool running = true;
+	while (running)
+	{
+		float currentTime = (float)glfwGetTime();
+		float dt = currentTime - lastTime;
+		lastTime = currentTime;
 
-  float globalAmb[] = {0.1f, 0.1f, 0.1f, 0.1f};
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
+		glfwPollEvents();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  float light0[4][4] = {
-				{0.1f, 0.1f, 0.1f, 1.f}, // ambiente
-				{0.8f, 0.8f, 0.8f, 1.f}, // difusa
-				{ 1.f,  1.f,  1.f, 1.f }, // especular
-				{0.f, 0.f, 1.f, 1.f}    // posição
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		reSize(width, height);
+
+		// -- Draw Objects --
+		Desenha(dt);
+
+		glfwSwapBuffers(window);
+		running = !glfwWindowShouldClose(window);
+	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
+
+	return 0;
+}
+
+
+void init(GLFWwindow* window) {
+	glfwMakeContextCurrent(window);
+	glfwSetKeyCallback(window, teclado_callback);
+
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+
+	float globalAmb[] = { 0.1f, 0.1f, 0.1f, 1.f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
+
+	float light0[4][4] = {
+				{0.1f, 0.1f, 0.1f, 1.f}, // ambient
+				{0.8f, 0.8f, 0.8f, 1.f}, // diffuse
+				{ 1.f,  1.f,  1.f, 1.f }, // specular
+				{0.f, 0.f, 1.f, 1.f}    // position
 	};
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
@@ -82,38 +117,12 @@ void init(GLFWwindow * window) {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
 	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
 
-	ObjLoader::loadOBJ(blenderModelId, "../assets/cube.obj");
+
+	ObjLoader::loadOBJ(blenderModelId, "./assets/cubo.obj");
 }
 
-void draw(float dt) {
-  glLoadIdentity();
-  
-  vec3 position(0.f, 0.f, 0.f);
-  vec3 direction(0.f, 0.f, -3.f);
-  vec3 up(0.f, 0.f, 0.f);
-  vec3 look = position + direction;
-
-  gluLookAt(position.x, position.y, position.z,
-            look.x, look.y, look.z,
-            up.x, up.y, up.z);
-
-  float veloc_ang = 25.f*dt;
-  angulo += veloc_ang;
-
-  glPushMatrix();
-    glTranslatef(0.f, 0.f, -5.f);
-    glRotatef(angulo, 1.f, 0.f, 0.f);
-    glRotatef(angulo, 0.f, 1.f, 0.f);
-    glRotatef(angulo, 0.f, 0.f, 1.f);
-    glCallList(blenderModelId);
-  glPopMatrix(); 
-
-  if (angulo >= 360) {
-    angulo = 0.0;
-  }
-}
-
-void reSize(int w, int h) {
+void reSize(int w, int h)
+{
 	glViewport(0, 0, w, h);
 
 	float aspect = (float)w / (float)h;
@@ -124,8 +133,11 @@ void reSize(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void teclado_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+
+void teclado_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 }

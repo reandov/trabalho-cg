@@ -1,5 +1,5 @@
 echo "> Compiling source code"
-g++ main.cpp source/ObjLoader.cpp source/Vetor.cpp headers/ObjLoader.h headers/Vetor.h -lGL -lGLU -lglfw -o bin/main
+g++ main.cpp ObjLoader.cpp ObjLoader.h Vetor.cpp Vetor.h Material.cpp Material.h -lGL -lGLU -lglfw -o main
 
 echo "> Running file"
-cd bin && ./main
+./main
