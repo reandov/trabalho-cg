@@ -1,93 +1,131 @@
+// Importações
+#include <GLFW/glfw3.h> 
 #include <GL/glut.h>
-#include <math.h>
+#include <GL/glu.h>
 
-void inicio();
-void desenha();
-void toFazendoNada();
-void teclado(unsigned char tecla, int x, int y);
+#include "./headers/ObjLoader.h"
 
-float anguloInicial = M_PI / 6.0;
-float velocidade = 0.01;
+// Assinaturas
+void init(GLFWwindow* window);
+void teclado_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
+void reSize(int w, int h);
+void draw(float dt);
+
+// Variáveis Globais
+static float angulo = 0; 
+static unsigned blenderModelId; 
 
 int main(int argc, char** argv) {
-    
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA); // profundidade, um framebuffer e sistema de cores RGB 255, 255, 255
-    glutInitWindowPosition(100, 100); // 100 pixels para a direito e 100 pixels para baixo
-    glutInitWindowSize(500, 500); // quantidade em pixels
-    glutCreateWindow("Primitivas");
+  glfwInit();
 
-    inicio();
+  GLFWwindow *window = glfwCreateWindow(800, 600, "Trabalho CG", NULL, NULL);
 
-    glutKeyboardFunc(teclado); //funcao que vai tratar as entradas de teclado
-    glutIdleFunc(toFazendoNada);
-    glutDisplayFunc(desenha);
+  init(window); 
 
-    glutMainLoop();
+  float lastTime = 0.0; 
 
-    return 0;
-}
+  bool running = true; 
 
-void inicio() {
-    glClearColor(0,0,0,0); // limpar as cores da caixa
-}
+  while (running) {
+    float currentTime = (float)glfwGetTime();
+    float dt = currentTime - lastTime;
+    lastTime = currentTime;
 
-//quantidade de divisões e o raio
-void desenhaCirculo(int n, float raio) {
-    float delta = 2.0 * M_PI / n; //circulo dividido n vezes (radianos)
-    for(int i = 0; i < n; i++) {
-        float angulo = anguloInicial + i * delta;
-        float x = raio * cos(angulo);
-        float y = raio * sin(angulo);
-
-        glVertex2f(x, y);
-    }
-}
-
-void teclado(unsigned char tecla, int x, int y) {
-    switch(tecla) {
-        case 'v':
-            velocidade = velocidade - 0.001;
-            break;
-        case 'b':
-            velocidade = velocidade + 0.01;
-            break;
-        case 'i':
-            velocidade = velocidade * (-1);
-            break;
-    }
-}
-
-void toFazendoNada() {
-    anguloInicial += velocidade * 2.0 * M_PI / 360.0;
-    if(anguloInicial > 2 * M_PI) anguloInicial -= 2 * M_PI;
-
-    glutPostRedisplay(); //redesenhar o poligono apos alterar o angulo inicial ^
-}
-
-void desenha() {
+    glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    
-    //xMin, xMax, yMin, yMax, zMin, zMax
-    glOrtho(-25, 25, -25, 25, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    int width, height; 
+    glfwGetFramebufferSize(window, &width, &height); 
+    reSize(width, height);
 
-    //GL_POINTS         -> pontos
-    //GL_LINES          -> segmentos de reta de 2 em 2
-    //GL_LINE_STRIP     -> linha conectada em sequencia 
-    //GL_LINE_LOOP      -> uma linha conectada fechada
-    //GL_TRIANGLES      -> triangulos
-    //GL_TRIANGLE_STRIP -> 
-    //GL_TRIANGLE_FAN   -> leque de triangulos
-    //GL_POLYGON        -> poligonos
-    glBegin(GL_POLYGON);
-        desenhaCirculo(8, 25);
-    glEnd();
+    // Desenha Objetos
+    draw(dt);
 
-    //glFlush(); // um bufer
-    glutSwapBuffers(); //alterna entre buffers
+    glfwSwapBuffers(window);
+    running = !glfwWindowShouldClose(window);
+  }
+
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  
+  return 0;
+}
+
+void init(GLFWwindow * window) {
+  glfwMakeContextCurrent(window); 
+  glfwSetKeyCallback(window, teclado_callback); 
+
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+
+  glEnable(GL_DEPTH_TEST);
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+
+  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+
+  float globalAmb[] = {0.1f, 0.1f, 0.1f, 0.1f};
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
+
+  float light0[4][4] = {
+				{0.1f, 0.1f, 0.1f, 1.f}, // ambiente
+				{0.8f, 0.8f, 0.8f, 1.f}, // difusa
+				{ 1.f,  1.f,  1.f, 1.f }, // especular
+				{0.f, 0.f, 1.f, 1.f}    // posição
+	};
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, &light0[1][0]);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
+	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
+
+	ObjLoader::loadOBJ(blenderModelId, "../assets/cube.obj");
+}
+
+void draw(float dt) {
+  glLoadIdentity();
+  
+  vec3 position(0.f, 0.f, 0.f);
+  vec3 direction(0.f, 0.f, -3.f);
+  vec3 up(0.f, 0.f, 0.f);
+  vec3 look = position + direction;
+
+  gluLookAt(position.x, position.y, position.z,
+            look.x, look.y, look.z,
+            up.x, up.y, up.z);
+
+  float veloc_ang = 25.f*dt;
+  angulo += veloc_ang;
+
+  glPushMatrix();
+    glTranslatef(0.f, 0.f, -5.f);
+    glRotatef(angulo, 1.f, 0.f, 0.f);
+    glRotatef(angulo, 0.f, 1.f, 0.f);
+    glRotatef(angulo, 0.f, 0.f, 1.f);
+    glCallList(blenderModelId);
+  glPopMatrix(); 
+
+  if (angulo >= 360) {
+    angulo = 0.0;
+  }
+}
+
+void reSize(int w, int h) {
+	glViewport(0, 0, w, h);
+
+	float aspect = (float)w / (float)h;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0, aspect, 0.1, 500.0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void teclado_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	}
 }

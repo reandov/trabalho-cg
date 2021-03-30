@@ -1,2 +1,0 @@
-void initialize();
-void draw();

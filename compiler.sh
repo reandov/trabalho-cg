@@ -1,5 +1,5 @@
 echo "> Compiling source code"
-g++ main_alt.cpp functions.h functions.c -lGL -lglut -o bin/main
+g++ main.cpp source/ObjLoader.cpp source/Vetor.cpp headers/ObjLoader.h headers/Vetor.h -lGL -lGLU -lglfw -o bin/main
 
 echo "> Running file"
 cd bin && ./main
