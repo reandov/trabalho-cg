@@ -21,7 +21,7 @@ void Desenha(float dt) {
 
 	glLoadIdentity();
 
-	vec3 position(0.f, 0.f, 0.f);
+	vec3 position(0.f, 2.f, 5.f);
 	vec3 direction(0.f, 0.f, -3.f);
 	vec3 up(0.f, 1.f, 0.f);
 	vec3 look = position + direction;// direction;
@@ -32,14 +32,14 @@ void Desenha(float dt) {
 		up.x, up.y, up.z);
 
 
-	float veloc_ang = 25.f*dt;
+	float veloc_ang = 10.f*dt;
 	angulo += veloc_ang;
 
 	glPushMatrix();
 		glTranslatef(0.f, 0.f, -5.f);
-		glRotatef(angulo, 1.f, 0.f, 0.f);
 		glRotatef(angulo, 0.f, 1.f, 0.f);
-		glRotatef(angulo, 0.f, 0.f, 1.f);
+		// glRotatef(angulo, 0.f, 1.f, 0.f);
+		// glRotatef(angulo, 0.f, 0.f, 1.f);
 		glCallList(blenderModelId);
 	glPopMatrix();
 
@@ -51,7 +51,7 @@ int main() {
 
 	glfwInit();
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutorial Light - Blender", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Trabalho CG", NULL, NULL);
 
 	init(window);
 
@@ -109,7 +109,7 @@ void init(GLFWwindow* window) {
 				{0.1f, 0.1f, 0.1f, 1.f}, // ambient
 				{0.8f, 0.8f, 0.8f, 1.f}, // diffuse
 				{ 1.f,  1.f,  1.f, 1.f }, // specular
-				{0.f, 0.f, 1.f, 1.f}    // position
+				{0.f, 10.f, 1.f, 1.f}    // position
 	};
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
@@ -118,7 +118,7 @@ void init(GLFWwindow* window) {
 	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
 
 
-	ObjLoader::loadOBJ(blenderModelId, "./assets/cubo.obj");
+	ObjLoader::loadOBJ(blenderModelId, "./assets/cenario.obj");
 }
 
 void reSize(int w, int h)
