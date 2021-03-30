@@ -50,7 +50,7 @@ void teclado(unsigned char tecla, int x, int y) {
             velocidade = velocidade - 0.001;
             break;
         case 'b':
-            velocidade = velocidade + 0.001;
+            velocidade = velocidade + 0.01;
             break;
         case 'i':
             velocidade = velocidade * (-1);
