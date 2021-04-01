@@ -5,9 +5,11 @@
 
 #include "ObjLoader.h"
 #include "MaterialSamples.h"
+#include "Camera.h"
 
 // Inicializar
 void init(GLFWwindow *window);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void teclado_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void reSize(int w, int h);
 
@@ -15,49 +17,28 @@ void reSize(int w, int h);
 
 // Variáveis
 static float angulo = 0;
-static unsigned blenderModelId;
-static unsigned tree1, tree2, tree3, tree4, tree5, tree6;
+static float lastMousePos = 0.0;
+static bool firstTimeMouse = true;
+static unsigned modelID[5];
+
+Camera camera(vec3(0, 2, 0));
 
 void Desenha(float dt)
 {
 
 	glLoadIdentity();
 
-	vec3 position(0.f, 5.f, 20.f);
-	vec3 direction(0.f, 0.f, -5.f);
-	vec3 up(0.f, 1.f, 0.f);
-	vec3 look = position + direction;
+	camera.ativar();
 
-	gluLookAt(
-		position.x, position.y, position.z,
-		look.x, look.y, look.z,
-		up.x, up.y, up.z);
-
-	float veloc_ang = 30.f * dt;
+	float veloc_ang = 25.f * dt;
 	angulo += veloc_ang;
 
 	jade.ativar();
 	glPushMatrix();
-	glTranslatef(0.f, 0.f, -15.f);
-	glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(blenderModelId);
-	glTranslatef(10.f, -1.f, -25.f);
-	glCallList(tree1);
-	glTranslatef(-20.f, -1.f, 25.f);
-	glCallList(tree2);
-	glTranslatef(-14.f, -1.f, 30.f);
-	glCallList(tree3);
-	glTranslatef(16.f, -1.f, -35.f);
-	glCallList(tree4);
-	glTranslatef(-22.f, -1.f, -10.f);
-	glCallList(tree5);
-	glTranslatef(-7.f, -1.f, -3.f);
-	glCallList(tree6);
+	glTranslatef(0.f, 0.f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
 	glPopMatrix();
-
-	// glPushMatrix();
-
-	// glPopMatrix();
 
 	if (angulo >= 360.0)
 		angulo = 0.0;
@@ -68,11 +49,10 @@ int main()
 
 	glfwInit();
 
-	GLFWwindow *window = glfwCreateWindow(800, 600, "Tutorial Light - Blender", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(1280, 720, "Trabalho CG", NULL, NULL);
 	init(window);
 
 	float lastTime = 0.0;
-
 	bool running = true;
 	while (running)
 	{
@@ -103,7 +83,10 @@ int main()
 void init(GLFWwindow *window)
 {
 	glfwMakeContextCurrent(window);
+
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, teclado_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 
@@ -124,7 +107,7 @@ void init(GLFWwindow *window)
 		{0.1f, 0.1f, 0.1f, 1.f},  // ambient
 		{0.6f, 0.6f, 0.6f, 1.f},  // diffuse
 		{0.8f, 0.8f, 0.8f, 0.8f}, // specular
-		{0.f, 0.1f, 0.f, 0.f}	  // position
+		{0.f, 0.4f, 0.f, 0.f}	  // position
 	};
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
@@ -132,13 +115,7 @@ void init(GLFWwindow *window)
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
 	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
 
-	ObjLoader::loadOBJ(blenderModelId, "assets/terrain.obj");
-	ObjLoader::loadOBJ(tree1, "assets/tree.obj");
-	ObjLoader::loadOBJ(tree2, "assets/tree.obj");
-	ObjLoader::loadOBJ(tree3, "assets/tree.obj");
-	ObjLoader::loadOBJ(tree4, "assets/tree.obj");
-	ObjLoader::loadOBJ(tree5, "assets/tree.obj");
-	ObjLoader::loadOBJ(tree6, "assets/tree.obj");
+	ObjLoader::loadOBJ(modelID[1], "assets/terrain.obj");
 }
 
 void reSize(int w, int h)
@@ -153,10 +130,48 @@ void reSize(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+	float dx;
+
+	if (firstTimeMouse)
+	{
+		dx = 0;
+		lastMousePos = xpos;
+		firstTimeMouse = false;
+	}
+
+	dx = xpos - lastMousePos;
+	lastMousePos = xpos;
+
+	camera.updateYaw(dx);
+	camera.update();
+}
+
 void teclado_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	}
+	else if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{
+		// Forward
+		camera.forward();
+	}
+	else if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{
+		// Back
+		camera.back();
+	}
+	else if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{
+		// Left
+		camera.left();
+	}
+	else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{
+		// Right
+		camera.right();
 	}
 }
