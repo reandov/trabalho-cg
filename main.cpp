@@ -6,6 +6,7 @@
 #include "ObjLoader.h"
 #include "MaterialSamples.h"
 #include "Camera.h"
+#include "Textura.h"
 
 // Inicializar
 void init(GLFWwindow *window);
@@ -19,7 +20,15 @@ static float lastMousePos = 0.0;
 static bool firstTimeMouse = true;
 static unsigned modelID[5];
 
-Camera camera(vec3(0, 2, 0));
+enum
+{
+	GRASS,
+	WOOD,
+	LEAVES
+};
+Textura CuboTex[3];
+
+Camera camera(vec3(0, 3, 0));
 
 void Desenha(float dt)
 {
@@ -31,61 +40,174 @@ void Desenha(float dt)
 	float veloc_ang = 25.f * dt;
 	angulo += veloc_ang;
 
-	jade.ativar();
-	glPushMatrix();
-	glTranslatef(0.f, 0.f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[0]);
-	glPopMatrix();
-
 	bronze.ativar();
+
+	/////////////////////////////////////////////////////////
+
 	glPushMatrix();
-	glTranslatef(3.f, 0.f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(0.f, -2.f, 0.f);
+	glCallList(modelID[0]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.f, 2.0f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(2.f, -2.f, 0.f);
+	glCallList(modelID[0]);
+
+	glTranslatef(-4.f, 0.f, 0.f);
+	glCallList(modelID[0]);
+
+	glPopMatrix();
+
+	/////////////////////////////////////////////////////////
+
+	glPushMatrix();
+
+	glTranslatef(0.f, -2.f, 2.f);
+	glCallList(modelID[0]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.f, 4.0f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(2.f, -2.f, 2.f);
+	glCallList(modelID[0]);
+
+	glTranslatef(-4.f, 0.f, 0.f);
+	glCallList(modelID[0]);
+
+	glPopMatrix();
+
+	/////////////////////////////////////////////////////////
+
+	glPushMatrix();
+
+	glTranslatef(0.f, -2.f, -2.f);
+	glCallList(modelID[0]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.f, 6.0f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(2.f, -2.f, -2.f);
+	glCallList(modelID[0]);
+
+	glTranslatef(-4.f, 0.f, 0.f);
+	glCallList(modelID[0]);
+
 	glPopMatrix();
 
-	jade.ativar();
+	/////////////////////////////////////////////////////////
+
 	glPushMatrix();
-	glTranslatef(5.f, 6.0f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
+
+	glTranslatef(0.f, 0.f, 0.f);
 	glCallList(modelID[1]);
+
+	glTranslatef(0.f, 2.f, 0.f);
+	glCallList(modelID[1]);
+
+	glTranslatef(0.f, 2.f, 0.f);
+	glCallList(modelID[1]);
+
+	glTranslatef(0.f, 2.f, 0.f);
+	glCallList(modelID[1]);
+
+	glPopMatrix();
+
+	/////////////////////////////////////////////////////////
+
+	glPushMatrix();
+
+	glTranslatef(0.f, 8.f, 0.f);
+	glCallList(modelID[2]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(1.f, 6.0f, 0.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(2.f, 6.f, 0.f);
+	glCallList(modelID[2]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.f, 6.0f, 2.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(-2.f, 6.f, 0.f);
+	glCallList(modelID[2]);
+
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.f, 6.0f, -2.f);
-	//glRotatef(angulo, 0.f, 1.f, 0.f);
-	glCallList(modelID[1]);
+
+	glTranslatef(0.f, 6.f, 2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(0.f, 6.f, -2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(2.f, 6.f, 2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(2.f, 6.f, -2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(-2.f, 6.f, 2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(-2.f, 6.f, -2.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(4.f, 6.f, 0.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(-4.f, 6.f, 0.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(0.f, 6.f, -4.f);
+	glCallList(modelID[2]);
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(0.f, 6.f, 4.f);
+	glCallList(modelID[2]);
+
 	glPopMatrix();
 
 	if (angulo >= 360.0)
@@ -131,14 +253,19 @@ int main()
 void init(GLFWwindow *window)
 {
 	glfwMakeContextCurrent(window);
-
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, teclado_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	CuboTex[GRASS].load("./assets/textures/grass.png");
+	CuboTex[WOOD].load("./assets/textures/wood.png");
+	CuboTex[LEAVES].load("./assets/textures/leaves.png");
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -153,17 +280,23 @@ void init(GLFWwindow *window)
 
 	float light0[4][4] = {
 		{0.1f, 0.1f, 0.1f, 1.f}, // ambient
-		{0.8f, 0.8f, 0.8f, 1.f}, // diffuse
+		{0.9f, 0.9f, 0.9f, 9.f}, // diffuse
 		{1.f, 1.f, 1.f, 1.f},	 // specular
-		{0.f, 2.f, 1.f, 1.f}};
+		{0.f, 15.f, 0.f, 1.f}};
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, &light0[1][0]);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
 	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
 
-	ObjLoader::loadOBJ(modelID[0], "assets/terrain.obj");
-	ObjLoader::loadOBJ(modelID[1], "assets/cubo.obj");
+	Textura *tex1 = &CuboTex[GRASS];
+	ObjLoader::loadOBJ(modelID[0], tex1, "assets/block.obj");
+
+	Textura *tex2 = &CuboTex[WOOD];
+	ObjLoader::loadOBJ(modelID[1], tex2, "assets/block.obj");
+
+	Textura *tex3 = &CuboTex[LEAVES];
+	ObjLoader::loadOBJ(modelID[2], tex3, "assets/block.obj");
 }
 
 void reSize(int w, int h)
