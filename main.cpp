@@ -13,8 +13,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void teclado_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void reSize(int w, int h);
 
-// Funções
-
 // Variáveis
 static float angulo = 0;
 static float lastMousePos = 0.0;
@@ -36,6 +34,56 @@ void Desenha(float dt)
 	jade.ativar();
 	glPushMatrix();
 	glTranslatef(0.f, 0.f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[0]);
+	glPopMatrix();
+
+	bronze.ativar();
+	glPushMatrix();
+	glTranslatef(3.f, 0.f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(3.f, 2.0f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(3.f, 4.0f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(3.f, 6.0f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	jade.ativar();
+	glPushMatrix();
+	glTranslatef(5.f, 6.0f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1.f, 6.0f, 0.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(3.f, 6.0f, 2.f);
+	//glRotatef(angulo, 0.f, 1.f, 0.f);
+	glCallList(modelID[1]);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(3.f, 6.0f, -2.f);
 	//glRotatef(angulo, 0.f, 1.f, 0.f);
 	glCallList(modelID[1]);
 	glPopMatrix();
@@ -104,18 +152,18 @@ void init(GLFWwindow *window)
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
 
 	float light0[4][4] = {
-		{0.1f, 0.1f, 0.1f, 1.f},  // ambient
-		{0.6f, 0.6f, 0.6f, 1.f},  // diffuse
-		{0.8f, 0.8f, 0.8f, 0.8f}, // specular
-		{0.f, 0.4f, 0.f, 0.f}	  // position
-	};
+		{0.1f, 0.1f, 0.1f, 1.f}, // ambient
+		{0.8f, 0.8f, 0.8f, 1.f}, // diffuse
+		{1.f, 1.f, 1.f, 1.f},	 // specular
+		{0.f, 2.f, 1.f, 1.f}};
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, &light0[1][0]);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
 	glLightfv(GL_LIGHT0, GL_POSITION, &light0[3][0]);
 
-	ObjLoader::loadOBJ(modelID[1], "assets/terrain.obj");
+	ObjLoader::loadOBJ(modelID[0], "assets/terrain.obj");
+	ObjLoader::loadOBJ(modelID[1], "assets/cubo.obj");
 }
 
 void reSize(int w, int h)
