@@ -1,5 +1,5 @@
 #pragma once
-#include "Vetor.h"
+#include "Vector.h"
 
 class Camera
 {
@@ -10,14 +10,15 @@ class Camera
     vec3 m_veloc;
 
     float m_PI = 3.14159265;
-    float m_scl = 0.50;
+    float m_scl = 1.0;
     float m_yaw;
     float m_pitch;
 
 public:
     Camera(vec3 pos);
     ~Camera();
-    void ativar();
+
+    void activate();
 
     void forward();
     void back();

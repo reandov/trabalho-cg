@@ -12,7 +12,7 @@ Camera::Camera(vec3 pos)
 
 Camera::~Camera() {}
 
-void Camera::ativar()
+void Camera::activate()
 {
     vec3 look = m_pos + m_dir;
     gluLookAt(m_pos.x, m_pos.y, m_pos.z, look.x, look.y, look.z, m_up.x, m_up.y, m_up.z);
@@ -60,8 +60,8 @@ void Camera::update()
     m_dir.x = sin(angYaw);
     m_dir.y = -sin(angPitch);
     m_dir.z = -cos(angYaw);
-    m_dir.normaliza();
-    m_left = m_up.prodVetorial(m_dir);
+    m_dir.normalize();
+    m_left = m_up.vectorialProduct(m_dir);
 }
 
 float Camera::cvtToRad(float ang)

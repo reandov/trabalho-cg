@@ -1,3 +1,4 @@
-echo "> Compiling source code"
-g++ main.cpp stb_image.cpp stb_image.h Camera.cpp Camera.h ObjLoader.cpp ObjLoader.h Textura.cpp Textura.h Vetor.cpp Vetor.h Material.cpp Material.h MaterialSamples.h -lGL -lGLU -lglfw -o main
+echo "> Compiling source code..."
+g++ main.cpp stb_image.cpp Camera.cpp ObjLoader.cpp Texture.cpp Vector.cpp Material.cpp -lGL -lGLU -lglfw -o main
+echo "> Source code compiled. Running game!"
 ./main
