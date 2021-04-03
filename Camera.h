@@ -10,8 +10,9 @@ class Camera
     vec3 m_veloc;
 
     float m_PI = 3.14159265;
-    float m_scl = 0.25;
+    float m_scl = 0.50;
     float m_yaw;
+    float m_pitch;
 
 public:
     Camera(vec3 pos);
@@ -24,6 +25,7 @@ public:
     void right();
 
     void updateYaw(float dYaw);
+    void updatePitch(float dPitch);
     void update();
 
 private:

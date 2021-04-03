@@ -16,7 +16,8 @@ void reSize(int w, int h);
 
 // Variáveis
 static float angulo = 0;
-static float lastMousePos = 0.0;
+static float lastMousePosX = 0.0;
+static float lastMousePosY = 0.0;
 static bool firstTimeMouse = true;
 static unsigned modelID[5];
 
@@ -44,171 +45,24 @@ void Desenha(float dt)
 
 	/////////////////////////////////////////////////////////
 
-	glPushMatrix();
-
-	glTranslatef(0.f, -2.f, 0.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, -2.f, 0.f);
-	glCallList(modelID[0]);
-
-	glTranslatef(-4.f, 0.f, 0.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	/////////////////////////////////////////////////////////
-
-	glPushMatrix();
-
-	glTranslatef(0.f, -2.f, 2.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, -2.f, 2.f);
-	glCallList(modelID[0]);
-
-	glTranslatef(-4.f, 0.f, 0.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	/////////////////////////////////////////////////////////
-
-	glPushMatrix();
-
-	glTranslatef(0.f, -2.f, -2.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, -2.f, -2.f);
-	glCallList(modelID[0]);
-
-	glTranslatef(-4.f, 0.f, 0.f);
-	glCallList(modelID[0]);
-
-	glPopMatrix();
-
-	/////////////////////////////////////////////////////////
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 0.f, 0.f);
-	glCallList(modelID[1]);
-
-	glTranslatef(0.f, 2.f, 0.f);
-	glCallList(modelID[1]);
-
-	glTranslatef(0.f, 2.f, 0.f);
-	glCallList(modelID[1]);
-
-	glTranslatef(0.f, 2.f, 0.f);
-	glCallList(modelID[1]);
-
-	glPopMatrix();
-
-	/////////////////////////////////////////////////////////
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 8.f, 0.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, 6.f, 0.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(-2.f, 6.f, 0.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 6.f, 2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 6.f, -2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, 6.f, 2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(2.f, 6.f, -2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(-2.f, 6.f, 2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(-2.f, 6.f, -2.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(4.f, 6.f, 0.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(-4.f, 6.f, 0.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 6.f, -4.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
-
-	glPushMatrix();
-
-	glTranslatef(0.f, 6.f, 4.f);
-	glCallList(modelID[2]);
-
-	glPopMatrix();
+	float tamX = 0.f;
+	float tamZ = 0.f;
+	for (int i = 0; i < 64; i++)
+	{
+		tamX = 0.f;
+		for (int j = 0; j < 64; j++)
+		{
+			glPushMatrix();
+
+			glTranslatef(tamX, -2.f, tamZ);
+			glCallList(modelID[0]);
+
+			glPopMatrix();
+
+			tamX += 2.f;
+		}
+		tamZ += 2.f;
+	}
 
 	if (angulo >= 360.0)
 		angulo = 0.0;
@@ -255,7 +109,7 @@ void init(GLFWwindow *window)
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, teclado_callback);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 
@@ -313,19 +167,37 @@ void reSize(int w, int h)
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-	float dx;
+	float dx, dy;
 
 	if (firstTimeMouse)
 	{
 		dx = 0;
-		lastMousePos = xpos;
+		lastMousePosX = xpos;
+		lastMousePosY = ypos;
 		firstTimeMouse = false;
 	}
 
-	dx = xpos - lastMousePos;
-	lastMousePos = xpos;
+	dx = xpos - lastMousePosX;
+	dy = ypos - lastMousePosY;
+
+	//dx *= sensitivity;
+	float sensitivity = 0.2f;
+	dy *= sensitivity;
+
+	if (dy > 89.0f)
+	{
+		dy = 89.0f;
+	}
+	else if (dy < -89.0f)
+	{
+		dy = -89.0f;
+	}
+
+	lastMousePosX = xpos;
+	lastMousePosY = ypos;
 
 	camera.updateYaw(dx);
+	camera.updatePitch(dy);
 	camera.update();
 }
 

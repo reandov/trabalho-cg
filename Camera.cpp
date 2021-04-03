@@ -47,11 +47,19 @@ void Camera::updateYaw(float dYaw)
     m_yaw += dYaw;
 }
 
+void Camera::updatePitch(float dPitch)
+{
+    m_pitch += dPitch;
+}
+
 void Camera::update()
 {
-    float ang = cvtToRad(m_yaw);
-    m_dir.x = sin(ang);
-    m_dir.z = -cos(ang);
+    float angYaw = cvtToRad(m_yaw);
+    float angPitch = cvtToRad(m_pitch);
+
+    m_dir.x = sin(angYaw);
+    m_dir.y = -sin(angPitch);
+    m_dir.z = -cos(angYaw);
     m_dir.normaliza();
     m_left = m_up.prodVetorial(m_dir);
 }
