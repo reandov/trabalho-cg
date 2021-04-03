@@ -1,4 +1,5 @@
 echo "> Compiling source code..."
-g++ main.cpp stb_image.cpp Camera.cpp ObjLoader.cpp Texture.cpp Vector.cpp Material.cpp -lGL -lGLU -lglfw -o main
+g++ Game.cpp ./sources/stb_image.cpp ./sources/Camera.cpp ./sources/ObjLoader.cpp ./sources/Texture.cpp ./sources/Vector.cpp ./sources/Material.cpp -lGL -lGLU -lglfw -o ./bin/Game
+
 echo "> Source code compiled. Running game!"
-./main
+./bin/Game

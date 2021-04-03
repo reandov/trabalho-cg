@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 
+// Header for Texture class (note: commetns about implementation are in the cpp file)
 class Texture
 {
 private:

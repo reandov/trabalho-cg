@@ -1,6 +1,6 @@
 #include <GL/gl.h>
-#include "Texture.h"
-#include "stb_image.h"
+#include "../headers/Texture.h"
+#include "../headers/stb_image.h"
 
 Texture::Texture() :
 

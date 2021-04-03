@@ -1,5 +1,5 @@
-#include "ObjLoader.h"
 #include <vector>
+#include "../headers/ObjLoader.h"
 
 // If readed line contains the v char, it will be a vertice
 vec3 ObjLoader::getVertice(std::string s)

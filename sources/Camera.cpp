@@ -1,4 +1,4 @@
-#include "Camera.h"
+#include "../headers/Camera.h"
 #include <GL/glu.h>
 
 Camera::Camera(vec3 pos)

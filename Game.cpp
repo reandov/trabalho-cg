@@ -5,10 +5,10 @@
 #include <vector>
 
 // Headers Importations
-#include "ObjLoader.h"
-#include "MaterialSamples.h"
-#include "Camera.h"
-#include "Texture.h"
+#include "headers/ObjLoader.h"
+#include "headers/MaterialSamples.h"
+#include "headers/Camera.h"
+#include "headers/Texture.h"
 
 // OpenGL Initializations
 void init(GLFWwindow *window);

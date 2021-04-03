@@ -1,4 +1,4 @@
-#include "Material.h"
+#include "../headers/Material.h"
 
 // Material class
 Material::Material(float ambi_r, float ambi_g, float ambi_b,

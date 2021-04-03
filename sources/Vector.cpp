@@ -1,4 +1,4 @@
-#include "Vector.h"
+#include "../headers/Vector.h"
 
 // Linear Algebra operations
 vec3::vec3() : x(0.0), y(0.0), z(0.0)
