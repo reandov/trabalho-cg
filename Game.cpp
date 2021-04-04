@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <vector>
+#include <random>
 
 // Headers Importations
 #include "headers/ObjLoader.h"
@@ -20,6 +21,7 @@ void resize(int w, int h);
 // Needed Functions Initializations
 void generateTerrain(unsigned modelID);
 void generateTrees(int xpos, int zpos, int height, unsigned modelID1, unsigned modelID2);
+void generateRandomPositions();
 
 // Necessary Variables
 static float lastMousePosX = 0.0;
@@ -41,6 +43,7 @@ static unsigned modelID[5];
 
 // Other Initializations
 vec3 lightPos(15.f, 0.f, 120.f);
+std::vector<vec3> randomPositions;
 Camera camera(vec3(0, 3, 0));
 
 int main()
@@ -93,6 +96,7 @@ void init(GLFWwindow *window)
 	// Disabling cursor on the screen
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	generateRandomPositions();
 	/////////////////////////////////
 	// Enabling OpenGL features
 
@@ -180,12 +184,17 @@ void draw(float dt)
 	generateTerrain(modelID[0]);
 
 	// Generating trees
-	generateTrees(0, 0, 4, modelID[1], modelID[2]);
-	generateTrees(30, 30, 4, modelID[1], modelID[2]);
-	generateTrees(15, 15, 7, modelID[1], modelID[2]);
-	generateTrees(20, 2, 8, modelID[1], modelID[2]);
-	generateTrees(2, 20, 5, modelID[1], modelID[2]);
-	generateTrees(4, 8, 4, modelID[1], modelID[2]);
+	// generateTrees(0, 0, 4, modelID[1], modelID[2]);
+	// generateTrees(30, 30, 4, modelID[1], modelID[2]);
+	// generateTrees(15, 15, 7, modelID[1], modelID[2]);
+	// generateTrees(20, 2, 8, modelID[1], modelID[2]);
+	// generateTrees(2, 20, 5, modelID[1], modelID[2]);
+	// generateTrees(4, 8, 4, modelID[1], modelID[2]);
+
+	for (int i = 0; i < 20; i++)
+	{
+		generateTrees(randomPositions[i].x, randomPositions[i].y, randomPositions[i].z, modelID[1], modelID[2]);
+	}
 
 	// Activating light
 	light.activate();
@@ -223,10 +232,10 @@ void generateTerrain(unsigned modelID)
 {
 	float tamX = 0.f;
 	float tamZ = 0.f;
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 32; i++)
 	{
 		tamX = 0.f;
-		for (int j = 0; j < 16; j++)
+		for (int j = 0; j < 32; j++)
 		{
 			glPushMatrix();
 
@@ -393,5 +402,26 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
 	{
 		// If light is moving, this will deny it's move
 		isLightMoving = !isLightMoving;
+	}
+}
+
+// Generate N vec3 containing random xpos, zpos and height
+void generateRandomPositions()
+{
+	std::random_device dev;
+	std::mt19937 rng(dev());
+	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 62); // distribution in range [1, 6]
+
+	for (int i = 0; i < 20; i++)
+	{
+		float x = dist6(rng);
+		float z = dist6(rng);
+		float height = dist6(rng);
+
+		if (height > 16)
+			height = height / 4;
+
+		vec3 rand(x, z, height);
+		randomPositions.push_back(rand);
 	}
 }
