@@ -35,14 +35,15 @@ enum
 {
 	GRASS,
 	WOOD,
-	LEAVES
+	LEAVES,
+	GLOWSTONE
 };
 
-Texture textures[3];
+Texture textures[4];
 static unsigned modelID[5];
 
 // Other Initializations
-vec3 lightPos(15.f, 0.f, 120.f);
+vec3 lightPos(35.f, 0.f, 120.f);
 std::vector<vec3> randomPositions;
 Camera camera(vec3(0, 3, 0));
 
@@ -151,6 +152,7 @@ void init(GLFWwindow *window)
 	textures[GRASS].load("./assets/textures/grass.png");
 	textures[WOOD].load("./assets/textures/wood.png");
 	textures[LEAVES].load("./assets/textures/leaves.png");
+	textures[GLOWSTONE].load("./assets/textures/glowstone.png");
 
 	// Loading block module and applying every texture individually
 	Texture *tex1 = &textures[GRASS];
@@ -163,6 +165,10 @@ void init(GLFWwindow *window)
 	// Loading block module and applying every texture individually
 	Texture *tex3 = &textures[LEAVES];
 	ObjLoader::loadOBJ(modelID[2], tex3, "assets/block.obj");
+
+	// Loading block module and applying every texture individually
+	Texture *tex4 = &textures[GLOWSTONE];
+	ObjLoader::loadOBJ(modelID[3], tex4, "assets/block.obj");
 }
 
 // Drawing function
@@ -214,7 +220,7 @@ void draw(float dt)
 	glTranslatef(lightPos.x, lightPos.y, lightPos.z);
 
 	// Calling a cube to be the light source
-	glCallList(modelID[2]);
+	glCallList(modelID[3]);
 
 	// Storing light's position
 	float lightposition[] = {lightPos.x, lightPos.y, lightPos.z, 1.f};
@@ -349,7 +355,7 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 	dx = xpos - lastMousePosX;
 	dy = ypos - lastMousePosY;
 
-	float sensitivity = 0.2f;
+	float sensitivity = 0.1f;
 	dx *= sensitivity;
 	dy *= sensitivity;
 
