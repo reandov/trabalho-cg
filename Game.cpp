@@ -29,6 +29,7 @@ static float lastMousePosY = 0.0;
 static float angle = 0;
 static bool firstTimeMouse = true;
 static bool isLightMoving = true;
+static bool isNoClipOn = false;
 
 // Model Variables and Initializations
 enum
@@ -45,7 +46,7 @@ static unsigned modelID[5];
 // Other Initializations
 std::vector<vec3> randomPositions;
 vec3 lightPos(35.f, 0.f, 120.f);
-vec3 glowstonePos(32.f, 0.f, 32.f);
+vec3 glowstonePos(32.f, 2.f, 32.f);
 Camera camera(vec3(0, 4, 0));
 
 int main()
@@ -203,28 +204,38 @@ void draw(float dt)
 		glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 	}
 
+	// Activates No Clip
+	if ((camera.m_pos.x >= 32.f && camera.m_pos.x <= 34.f) && (camera.m_pos.z >= 32.f && camera.m_pos.z <= 34.f))
+	{
+		std::cout << "No Clip: " << isNoClipOn << std::endl;
+		isNoClipOn = true;
+	}
+
 	// Simple handcrafted colision system (note: this implementation is based on coordinate system only)
-	if (camera.m_pos.y < 4 || camera.m_pos.y > 5)
+	if (!isNoClipOn)
 	{
-		camera.m_pos.y = 4;
-	}
+		if (camera.m_pos.y < 4 || camera.m_pos.y > 5)
+		{
+			camera.m_pos.y = 4;
+		}
 
-	if (camera.m_pos.x < 1)
-	{
-		camera.m_pos.x = 2;
-	}
-	else if (camera.m_pos.x > 63)
-	{
-		camera.m_pos.x = 62;
-	}
+		if (camera.m_pos.x < 1)
+		{
+			camera.m_pos.x = 2;
+		}
+		else if (camera.m_pos.x > 63)
+		{
+			camera.m_pos.x = 62;
+		}
 
-	if (camera.m_pos.z < 1)
-	{
-		camera.m_pos.z = 2;
-	}
-	else if (camera.m_pos.z > 62)
-	{
-		camera.m_pos.z = 60;
+		if (camera.m_pos.z < 1)
+		{
+			camera.m_pos.z = 2;
+		}
+		else if (camera.m_pos.z > 62)
+		{
+			camera.m_pos.z = 60;
+		}
 	}
 
 	// Calculating angular velocity
@@ -246,6 +257,7 @@ void draw(float dt)
 	emerald.activate();
 	glPushMatrix();
 	glTranslatef(glowstonePos.x, glowstonePos.y, glowstonePos.z);
+	glRotatef(angle, 0.f, 2.f, 0.f);
 	glCallList(modelID[3]);
 	glPopMatrix();
 
@@ -459,6 +471,20 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
 	{
 		// If light is moving, this will deny it's move
 		isLightMoving = !isLightMoving;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+	{
+		// Generates a new set of random positions
+		randomPositions.clear();
+		generateRandomPositions();
+	}
+	else if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+	{
+		// Disables No Clip
+		if (isNoClipOn)
+		{
+			isNoClipOn = !isNoClipOn;
+		}
 	}
 }
 
