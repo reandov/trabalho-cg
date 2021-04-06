@@ -3,6 +3,8 @@
 
 class Camera
 {
+
+public:
     vec3 m_pos;
     vec3 m_dir;
     vec3 m_left;
@@ -14,7 +16,6 @@ class Camera
     float m_yaw;
     float m_pitch;
 
-public:
     Camera(vec3 pos);
     ~Camera();
 

@@ -43,9 +43,10 @@ Texture textures[4];
 static unsigned modelID[5];
 
 // Other Initializations
-vec3 lightPos(35.f, 0.f, 120.f);
 std::vector<vec3> randomPositions;
-Camera camera(vec3(0, 3, 0));
+vec3 lightPos(35.f, 0.f, 120.f);
+vec3 glowstonePos(32.f, 0.f, 32.f);
+Camera camera(vec3(0, 4, 0));
 
 int main()
 {
@@ -124,7 +125,7 @@ void init(GLFWwindow *window)
 	/////////////////////////////////
 
 	// Clearing background color (note: in this case, I'm chaning to sky blue color)
-	glClearColor(0.19f, 0.6f, 0.8f, 1.f);
+	//glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 
 	/////////////////////////////////
 	// Setting up the light0
@@ -133,8 +134,16 @@ void init(GLFWwindow *window)
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
 
-	// Matrix containing the light0 configuration
+	// Matrix containing the light0 and light1 configuration
 	float light0[3][4] = {
+		// Ambient
+		{0.8f, 0.8f, 0.8f, 1.f},
+		// Diffuse
+		{0.9f, 0.9f, 0.9f, 1.f},
+		// Specular
+		{0.1f, 0.1f, 0.1f, 1.f}};
+
+	float light1[3][4] = {
 		// Ambient
 		{0.8f, 0.8f, 0.8f, 1.f},
 		// Diffuse
@@ -146,6 +155,10 @@ void init(GLFWwindow *window)
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, &light0[1][0]);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, &light1[0][0]);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, &light1[1][0]);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, &light1[2][0]);
 	/////////////////////////////////
 
 	// Loading textures
@@ -180,6 +193,40 @@ void draw(float dt)
 	// Activating camera
 	camera.activate();
 
+	// Creating a simple day/night cicle
+	if (angle < 150)
+	{
+		glClearColor(0.f, 0.f, 0.1f, 1.f);
+	}
+	else
+	{
+		glClearColor(0.19f, 0.6f, 0.8f, 1.f);
+	}
+
+	// Simple handcrafted colision system (note: this implementation is based on coordinate system only)
+	if (camera.m_pos.y < 4 || camera.m_pos.y > 5)
+	{
+		camera.m_pos.y = 4;
+	}
+
+	if (camera.m_pos.x < 1)
+	{
+		camera.m_pos.x = 2;
+	}
+	else if (camera.m_pos.x > 63)
+	{
+		camera.m_pos.x = 62;
+	}
+
+	if (camera.m_pos.z < 1)
+	{
+		camera.m_pos.z = 2;
+	}
+	else if (camera.m_pos.z > 62)
+	{
+		camera.m_pos.z = 60;
+	}
+
 	// Calculating angular velocity
 	float angular_velocity = 25.f * dt;
 
@@ -190,22 +237,26 @@ void draw(float dt)
 	generateTerrain(modelID[0]);
 
 	// Generating trees
-	// generateTrees(0, 0, 4, modelID[1], modelID[2]);
-	// generateTrees(30, 30, 4, modelID[1], modelID[2]);
-	// generateTrees(15, 15, 7, modelID[1], modelID[2]);
-	// generateTrees(20, 2, 8, modelID[1], modelID[2]);
-	// generateTrees(2, 20, 5, modelID[1], modelID[2]);
-	// generateTrees(4, 8, 4, modelID[1], modelID[2]);
-
 	for (int i = 0; i < 20; i++)
 	{
 		generateTrees(randomPositions[i].x, randomPositions[i].y, randomPositions[i].z, modelID[1], modelID[2]);
 	}
 
 	// Activating light
-	light.activate();
+	emerald.activate();
+	glPushMatrix();
+	glTranslatef(glowstonePos.x, glowstonePos.y, glowstonePos.z);
+	glCallList(modelID[3]);
+	glPopMatrix();
+
+	// Storing light's position
+	float glowstonePosition[] = {glowstonePos.x, glowstonePos.y, glowstonePos.z, 1.f};
+
+	// Updating light position using the OpenGL native function
+	glLightfv(GL_LIGHT0, GL_POSITION, glowstonePosition);
 
 	// If light is moving, keep applying rotation and recalculating the angle
+	light.activate();
 	if (isLightMoving)
 	{
 		angle += angular_velocity;
@@ -414,18 +465,31 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
 // Generate N vec3 containing random xpos, zpos and height
 void generateRandomPositions()
 {
+	std::vector<int> availableMetrics = {};
+
+	for (int i = 0; i < 32; i++)
+	{
+		availableMetrics.push_back(i * 2);
+	}
+
 	std::random_device dev;
 	std::mt19937 rng(dev());
-	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 62); // distribution in range [1, 6]
+	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 30); // distribution in range [1, 6]
 
 	for (int i = 0; i < 20; i++)
 	{
-		float x = dist6(rng);
-		float z = dist6(rng);
-		float height = dist6(rng);
+		float x = availableMetrics[dist6(rng)];
+		float z = availableMetrics[dist6(rng)];
+		float height = availableMetrics[dist6(rng)];
 
-		if (height > 16)
-			height = height / 4;
+		if (height < 4)
+		{
+			height = 4;
+		}
+		else if (height > 16)
+		{
+			height = 4;
+		}
 
 		vec3 rand(x, z, height);
 		randomPositions.push_back(rand);
