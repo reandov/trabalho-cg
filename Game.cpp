@@ -1,29 +1,44 @@
-// Standard Importations
+// +===========================+
+// |                           |
+// |      PROTO-MINECRAFT      |
+// |                           |
+// +===========================+
+
+// ~> Evandro Rodrigues 	- 402324
+// ~> Leonardo David 		- 404074
+// ~> Jordão Rodrigues 		- 403686
+
+// Para rodar o código é necessário a GLFW3 (sudo apt install libglfw3)
+// Para rodar o código de maneira rápida é só executar o shell script criado por nós: ./compiler.sh
+
+// OBS: Os comentários das headers e demais arquivos estão em inglês, pois fizemos inicialmente assim, por ser mais fácil pra nós (em termos de leitura :) )
+
+// Importações padrão ou do C++
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <vector>
 #include <random>
 
-// Headers Importations
+// Importações das Headers
 #include "headers/ObjLoader.h"
 #include "headers/MaterialSamples.h"
 #include "headers/Camera.h"
 #include "headers/Texture.h"
 
-// OpenGL Initializations
+// Inicializaçõs do OpenGL
 void init(GLFWwindow *window);
 void draw(float dt);
 void mouseCallback(GLFWwindow *window, double xpos, double ypos);
 void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void resize(int w, int h);
 
-// Needed Functions Initializations
-void generateTerrain(unsigned modelID);
-void generateTrees(int xpos, int zpos, int height, unsigned modelID1, unsigned modelID2);
-void generateRandomPositions();
+// Funções necessárias
+void generateTerrain(unsigned modelID);													  // Geração do terreno (recebe um obj com textura para servir de modelo)
+void generateTrees(int xpos, int zpos, int height, unsigned modelID1, unsigned modelID2); // Geração das árvores, em posições X e Z aleatórias, altura aleatória e recebe os dois objs.
+void generateRandomPositions();															  // Função auxiliar que gera um vetor de vec3 para ser usando na geração das árvores
 
-// Necessary Variables
+// Variáveis de inicialização
 static float lastMousePosX = 0.0;
 static float lastMousePosY = 0.0;
 static float angle = 0;
@@ -31,7 +46,7 @@ static bool firstTimeMouse = true;
 static bool isLightMoving = true;
 static bool isNoClipOn = false;
 
-// Model Variables and Initializations
+// ENUM para cada tipo de bloco carregado.
 enum
 {
 	GRASS,
@@ -40,29 +55,41 @@ enum
 	GLOWSTONE
 };
 
+// Vetor de texturas
 Texture textures[4];
+
+// Vetor de Objetos.
 static unsigned modelID[5];
 
-// Other Initializations
+// Outras inicializações e variáveis/vetores
+
+// Vetor vec3 de posições aleatórias
 std::vector<vec3> randomPositions;
+
+// Posição da luz (que imita o sol)
 vec3 lightPos(35.f, 0.f, 120.f);
+
+// Posição do bloco de luz central do terreno
 vec3 glowstonePos(32.f, 2.f, 32.f);
+
+// Inicialização da câmera
 Camera camera(vec3(0, 4, 0));
 
 int main()
 {
-	// Initializing GLFW
+	// Inicialização da GLFW
 	glfwInit();
 
-	// Creating window and initializing it
+	// Criação da janela e inicializando a mesma
 	GLFWwindow *window = glfwCreateWindow(1280, 720, "Trabalho CG", NULL, NULL);
 	init(window);
 
-	// Main loop
+	// Loop principal
 	float lastTime = 0.0;
 	bool running = true;
 	while (running)
 	{
+		// Calculamos o framerate da janela
 		float currentTime = (float)glfwGetTime();
 		float dt = currentTime - lastTime;
 		lastTime = currentTime;
@@ -74,9 +101,12 @@ int main()
 		glfwGetFramebufferSize(window, &width, &height);
 		resize(width, height);
 
+		// Desenhamos o que precisa ser desenhado aqui
 		draw(dt);
 
 		glfwSwapBuffers(window);
+
+		// Enquanto a janela estiver rodando
 		running = !glfwWindowShouldClose(window);
 	}
 
@@ -86,56 +116,54 @@ int main()
 	return 0;
 }
 
-// Initialization functions - Runs at the start of a window
+// Funçao Init roda ao instanciar uma janela nova
 void init(GLFWwindow *window)
 {
-	// Creating the context of the window
+	// Criação do contexto da janela
 	glfwMakeContextCurrent(window);
 
-	// Keyboard and Mouse callbacks
+	// Callbacks do mouse e teclado
 	glfwSetKeyCallback(window, keyboardCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
 
-	// Disabling cursor on the screen
+	// Desabilitando cursor na janela
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	// Povoa o vetor de posições aleatórias aqui
 	generateRandomPositions();
-	/////////////////////////////////
-	// Enabling OpenGL features
 
-	// Depth
+	/////////////////////////////////
+	// Ligando algumas funcionalidades do OpenGL
+
+	// Profundidade
 	glEnable(GL_DEPTH_TEST);
 
-	// Textures
+	// Texturas
 	glEnable(GL_TEXTURE_2D);
 
-	// Face cutting (faces not facing camera will be cutted a.k.a. clipping)
+	// Face cutting (faces que não estão de frente pra câmera serão cortadas)
 	glEnable(GL_CULL_FACE);
 
-	// Enable OpenGL's Lighting engine
+	// Habilitando o motor de iluminação do OpenGL
 	glEnable(GL_LIGHTING);
 
-	// Enable Light 0 (note: standard OpenGL only supports 8 lights at the max)
+	// Ligando a luz 0 (é estranho dizer isso dentro de um programa de computador :D)
 	glEnable(GL_LIGHT0);
 
-	// Set texture environment parameters
+	// GL_MODULATE a textura sofra efeitos da iluminação
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	// Related to glEnable(GL_CULL_FACE), this function remove the back faces
+	// Aqui só especificamos que a face a ser removida pelo Face Cutting será a de trás
 	glCullFace(GL_BACK);
 	/////////////////////////////////
 
-	// Clearing background color (note: in this case, I'm chaning to sky blue color)
-	//glClearColor(0.19f, 0.6f, 0.8f, 1.f);
-
 	/////////////////////////////////
-	// Setting up the light0
-	// Configuring global ambient light
+	// Configurando a luz ambiente
 	float globalAmb[] = {0.4f, 0.4f, 0.4f, 1.f};
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmb);
 
-	// Matrix containing the light0 and light1 configuration
+	// Matrizes de configuração da luz0 e luz1
 	float light0[3][4] = {
 		// Ambient
 		{0.8f, 0.8f, 0.8f, 1.f},
@@ -152,7 +180,7 @@ void init(GLFWwindow *window)
 		// Specular
 		{0.1f, 0.1f, 0.1f, 1.f}};
 
-	// Setting every property of the light
+	// Configurando cada componente da luz
 	glLightfv(GL_LIGHT0, GL_AMBIENT, &light0[0][0]);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, &light0[1][0]);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, &light0[2][0]);
@@ -162,39 +190,39 @@ void init(GLFWwindow *window)
 	glLightfv(GL_LIGHT1, GL_SPECULAR, &light1[2][0]);
 	/////////////////////////////////
 
-	// Loading textures
+	// Carregando as texturas
 	textures[GRASS].load("./assets/textures/grass.png");
 	textures[WOOD].load("./assets/textures/wood.png");
 	textures[LEAVES].load("./assets/textures/leaves.png");
 	textures[GLOWSTONE].load("./assets/textures/glowstone.png");
 
-	// Loading block module and applying every texture individually
+	// Carregando cada modelo .OBJ e aplicando a textura especificada
 	Texture *tex1 = &textures[GRASS];
 	ObjLoader::loadOBJ(modelID[0], tex1, "assets/block.obj");
 
-	// Loading block module and applying every texture individually
+	// Carregando cada modelo .OBJ e aplicando a textura especificada
 	Texture *tex2 = &textures[WOOD];
 	ObjLoader::loadOBJ(modelID[1], tex2, "assets/block.obj");
 
-	// Loading block module and applying every texture individually
+	// Carregando cada modelo .OBJ e aplicando a textura especificada
 	Texture *tex3 = &textures[LEAVES];
 	ObjLoader::loadOBJ(modelID[2], tex3, "assets/block.obj");
 
-	// Loading block module and applying every texture individually
+	// Carregando cada modelo .OBJ e aplicando a textura especificada
 	Texture *tex4 = &textures[GLOWSTONE];
 	ObjLoader::loadOBJ(modelID[3], tex4, "assets/block.obj");
 }
 
-// Drawing function
+// Função de desenho
 void draw(float dt)
 {
-	// Loading identity
+	// Carregando a Identidade
 	glLoadIdentity();
 
-	// Activating camera
+	// Ativando a camera
 	camera.activate();
 
-	// Creating a simple day/night cicle
+	// Criando um ciclo de dia/noite
 	if (angle < 150)
 	{
 		glClearColor(0.f, 0.f, 0.1f, 1.f);
@@ -204,14 +232,14 @@ void draw(float dt)
 		glClearColor(0.19f, 0.6f, 0.8f, 1.f);
 	}
 
-	// Activates No Clip
+	// Aqui ativamos o noclip baseado na localização da câmera (a posição) no plano cartesiano
 	if ((camera.m_pos.x >= 32.f && camera.m_pos.x <= 34.f) && (camera.m_pos.z >= 32.f && camera.m_pos.z <= 34.f))
 	{
 		std::cout << "No Clip: " << isNoClipOn << std::endl;
 		isNoClipOn = true;
 	}
 
-	// Simple handcrafted colision system (note: this implementation is based on coordinate system only)
+	// Seguindo a mesma ideia do noclip aqui é um sistema de colisão simples feito usando as proprias coordenadas
 	if (!isNoClipOn)
 	{
 		if (camera.m_pos.y < 4 || camera.m_pos.y > 5)
@@ -238,22 +266,22 @@ void draw(float dt)
 		}
 	}
 
-	// Calculating angular velocity
+	// Calculo da velocidade angular
 	float angular_velocity = 25.f * dt;
 
-	// Activating default material
+	// Ativanto material do terreno
 	chrome.activate();
 
-	// Generating terrain
+	// Gerando o terreno
 	generateTerrain(modelID[0]);
 
-	// Generating trees
+	// Gerando as arvores
 	for (int i = 0; i < 20; i++)
 	{
 		generateTrees(randomPositions[i].x, randomPositions[i].y, randomPositions[i].z, modelID[1], modelID[2]);
 	}
 
-	// Activating light
+	// Ativando a luz central
 	emerald.activate();
 	glPushMatrix();
 	glTranslatef(glowstonePos.x, glowstonePos.y, glowstonePos.z);
@@ -261,13 +289,13 @@ void draw(float dt)
 	glCallList(modelID[3]);
 	glPopMatrix();
 
-	// Storing light's position
+	// Armazenando a posição do bloco central pra ser usado na luz
 	float glowstonePosition[] = {glowstonePos.x, glowstonePos.y, glowstonePos.z, 1.f};
 
-	// Updating light position using the OpenGL native function
-	glLightfv(GL_LIGHT0, GL_POSITION, glowstonePosition);
+	// Setando a localização da luz1 para a centro do mapa
+	glLightfv(GL_LIGHT1, GL_POSITION, glowstonePosition);
 
-	// If light is moving, keep applying rotation and recalculating the angle
+	// Se isLightMoving for true continuamos a atualizar o angulo
 	light.activate();
 	if (isLightMoving)
 	{
@@ -279,24 +307,24 @@ void draw(float dt)
 		glRotatef(angle, 5.f, 0.f, 0.f);
 	}
 
-	// Translating the light's position
+	// Transladando a posição da luz
 	glTranslatef(lightPos.x, lightPos.y, lightPos.z);
 
-	// Calling a cube to be the light source
+	// Carregando o cubo que seria a luz0 (sol)
 	glCallList(modelID[3]);
 
-	// Storing light's position
+	// Armazenando a posição da luz
 	float lightposition[] = {lightPos.x, lightPos.y, lightPos.z, 1.f};
 
-	// Updating light position using the OpenGL native function
+	// Atualizando a posição da luz baseada na posição do cubo
 	glLightfv(GL_LIGHT0, GL_POSITION, lightposition);
 
-	// Angle limiter
+	// Delimitador no angulo
 	if (angle >= 360.0)
 		angle = 0.0;
 }
 
-// Function used to draw a simple terrain by passing a model (in which it'll be used as ground block)
+// Função para gerar o terreno
 void generateTerrain(unsigned modelID)
 {
 	float tamX = 0.f;
@@ -319,7 +347,7 @@ void generateTerrain(unsigned modelID)
 	}
 }
 
-// Function to generate a tree
+// Função para gerar as arvores
 void generateTrees(int xpos, int zpos, int height, unsigned modelID1, unsigned modelID2)
 {
 	float increment = 0.0f;
@@ -389,7 +417,7 @@ void generateTrees(int xpos, int zpos, int height, unsigned modelID1, unsigned m
 	glPopMatrix();
 }
 
-// Used to resize the window and mantain aspect ratio
+// Usado para manter o aspect ratio da janela
 void resize(int w, int h)
 {
 	glViewport(0, 0, w, h);
@@ -402,7 +430,7 @@ void resize(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-// Mouse callback function
+// Mouse callback
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
 	float dx, dy;
@@ -439,48 +467,48 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 	camera.update();
 }
 
-// Keyboard callback function
+// Keyboard callback
 void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
-		// Close window on ESC keypress
+		// Fecha janela ao apertar ESC
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 	else if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		// Forward
+		// Move a câmera pra frente
 		camera.forward();
 	}
 	else if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		// Back
+		// Move a câmera pra trás
 		camera.back();
 	}
 	else if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		// Left
+		// Move a câmera pra esquerda
 		camera.left();
 	}
 	else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
-		// Right
+		// Move a câmera pra direita
 		camera.right();
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		// If light is moving, this will deny it's move
+		// Se a luz estiver movendo, espaço fará com que fique parada
 		isLightMoving = !isLightMoving;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
-		// Generates a new set of random positions
+		// Gera novas posições aleatórias
 		randomPositions.clear();
 		generateRandomPositions();
 	}
 	else if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
-		// Disables No Clip
+		// Desativa o noclip
 		if (isNoClipOn)
 		{
 			isNoClipOn = !isNoClipOn;
@@ -488,7 +516,7 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
 	}
 }
 
-// Generate N vec3 containing random xpos, zpos and height
+// Gera um vetor de vec3 contendo xpos, zpos and height
 void generateRandomPositions()
 {
 	std::vector<int> availableMetrics = {};
@@ -500,7 +528,7 @@ void generateRandomPositions()
 
 	std::random_device dev;
 	std::mt19937 rng(dev());
-	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 30); // distribution in range [1, 6]
+	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 30);
 
 	for (int i = 0; i < 20; i++)
 	{
